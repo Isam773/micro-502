@@ -15,11 +15,23 @@ def euler2rotmat(euler_angles):
 
     # --- YOUR CODE HERE ---
 
-    # R_roll = 
-    # R_pitch = 
-    # R_yaw = 
+    R_roll = np.array([
+        [1, 0, 0],
+        [0, np.cos(euler_angles[0]), -np.sin(euler_angles[0])],
+        [0, np.sin(euler_angles[0]), np.cos(euler_angles[0])]
+    ])
+    R_pitch = np.array([
+        [np.cos(euler_angles[1]), 0, np.sin(euler_angles[0])],
+        [0, 1, 0],
+        [-np.sin(euler_angles[0]), 0, np.cos(euler_angles[1])]
+    ])
+    R_yaw = np.array([
+        [np.cos(euler_angles[2]), -np.sin(euler_angles[0]), 0],
+        [-np.sin(euler_angles[0]), np.cos(euler_angles[1]), 0],
+        [0, 0, 1]
+    ])
 
-    # R =
+    R = R_yaw @ R_pitch @ R_roll
     return R
 
 
@@ -39,11 +51,10 @@ def rot_inertial2body(control_commands, euler_angles, quaternion):
     #           control_commands: A list of 4 control commands [vel_x, vel_y, altitude, yaw_rate] in the body reference frame
 
     # --- YOUR CODE HERE ---
-
-    # vel_inertial = 
-    # R = 
-    # vel_body = 
-
-    # control_commands = 
+    vel_inertial = np.zeros(3)
+    vel_inertial[0:2] = control_commands[0:2]
+    R = euler2rotmat(euler_angles)
+    vel_body = R.T @ vel_inertial
+    control_commands[0:2] = vel_body[0:2]
 
     return control_commands
