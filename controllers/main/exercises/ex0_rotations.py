@@ -55,6 +55,8 @@ def rot_inertial2body(control_commands, euler_angles, quaternion):
     vel_inertial[0:2] = control_commands[0:2]
     R = euler2rotmat(euler_angles)
     vel_body = R.T @ vel_inertial
+    #print("before", control_commands)
     control_commands[0:2] = vel_body[0:2]
+    #print("after", control_commands)
 
     return control_commands
