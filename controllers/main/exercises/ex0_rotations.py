@@ -27,7 +27,7 @@ def euler2rotmat(euler_angles):
     ])
     R_yaw = np.array([
         [np.cos(euler_angles[2]), -np.sin(euler_angles[0]), 0],
-        [-np.sin(euler_angles[0]), np.cos(euler_angles[1]), 0],
+        [np.sin(euler_angles[0]), np.cos(euler_angles[1]), 0],
         [0, 0, 1]
     ])
 
