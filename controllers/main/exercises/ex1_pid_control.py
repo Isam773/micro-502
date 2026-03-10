@@ -9,7 +9,6 @@ class quadrotor_controller():
         # Exercise 1: Choose what to tune ["vel_z", "pos_z", "vel_xy", "pos_xy"]
         self.tuning_level = "pos_xy" #"off" to disable tuning
         
-        ### START EXERCISE 1 tuning part ###
         # Only change the gains you are asked to, the others are already tuned by us (INITIAL GAINS)
         ### START EXERCISE 1 SOLUTION ###
         gains = {
@@ -131,7 +130,10 @@ class quadrotor_controller():
                 self.init_pos = [sensor_data['x_global'], sensor_data['y_global'], sensor_data['z_global'], 0]
             setpoint = self.init_pos + np.array([0,0,0.75,0]) #Hover above initial position
 
-        ### START EXERCISE 1 implementation part ###
+        ### START EXERCISE 1 SOLUTION ###
+
+        # To check what is in sensor_data, look at main.py -> def read_sensors(self)
+
         ### Position control loop ###
         # For tuning
         if self.tuning_level == "pos_xy":
