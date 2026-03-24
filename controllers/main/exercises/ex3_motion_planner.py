@@ -42,10 +42,10 @@ class MotionPlanner3D():
         # - path_waypoints: The sequence of input path waypoints provided by the path-planner, including the start and final goal position: Vector of m waypoints, consisting of a tuple with three reference positions each as provided by AStar
 
         # TUNE THE FOLLOWING PARAMETERS (PART 2) ----------------------------------------------------------------- ##
-        self.disc_steps = 2 #Integer number steps to divide every path segment into to provide the reference positions for PID control # IDEAL: Between 10 and 20
-        self.vel_lim = 2.0 #Velocity limit of the drone (m/s)
-        self.acc_lim = 10.0 #Acceleration limit of the drone (m/s²)
-        t_f = 10.0  # Final time at the end of the path (s)
+        self.disc_steps = 15     #Integer number steps to divide every path segment into to provide the reference positions for PID control # IDEAL: Between 10 and 20
+        self.vel_lim = 6.0 #Velocity limit of the drone (m/s)
+        self.acc_lim = 50.0 #Acceleration limit of the drone (m/s²)
+        t_f = 5.0  # Final time at the end of the path (s)
 
         # Determine the number of segments of the path
         self.times = np.linspace(0, t_f, len(path_waypoints)) # The time vector at each path waypoint to traverse (Vector of size m) (must be 0 at start)
@@ -62,9 +62,13 @@ class MotionPlanner3D():
 
         # YOUR SOLUTION HERE ---------------------------------------------------------------------------------- ## 
         
-        # A_m = np.array([
-        #     ...
-        # ])
+        A_m = np.array([
+            [1, t, t**2, t**3, t**4, t**5],
+            [0, 1, 2*t, 3*t**2, 4*t**3, 5*t**4],
+            [0, 0, 2, 6*t, 12*t**2, 20*t**3],
+            [0, 0, 0, 6, 24*t, 60*t**2],
+            [0, 0, 0, 0, 24, 120*t],
+        ])
 
         ## ---------------------------------------------------------------------------------------------------- ##
 
@@ -99,18 +103,30 @@ class MotionPlanner3D():
                 pos_0 = pos[i] #Starting position of the segment
                 pos_f = pos[i+1] #Final position of the segment
                 A_f = self.compute_poly_matrix(seg_times[i]) # A_f gives the constraint factor matrix A_m for a segment i at its relative end time t=seg_times[i]
-                # if i == 0: # First path segment
-                #     # 1. Implement the initial constraints here for the first path segment using A_0, ensuring that the intiial velocities / accelerations are zero
-                #     # 2. Implement the final position and the continuity constraints for velocity, acceleration, jerk and snap at the end of the first segment here using A_0 and A_f (check hints in the exercise description)
-                # elif i < m-2: # Intermediate path segments
-                #     # 1. Similarly, implement the initial and final position constraints here for each intermediate path segment
-                #     # 2. Similarly, implement the end of the continuity constraints for velocity, acceleration, jerk and snap at the end of each intermediate segment here using A_0 and A_f
-                # elif i == m-2: #Final path segment
-                #     # 1. Implement the initial and final position, velocity and accelerations constraints here for the final path segment using A_0 and A_f
-        
+                if i == 0: # First path segment
+                    # 1. Implement the initial constraints here for the first path segment using A_0, ensuring that the intitial velocities / accelerations are zero
+                    b[0] = pos_0
+                    A[0:3, 0:6] = A_0[0:3]
+                    # 2. Implement the final position and the continuity constraints for velocity, acceleration, jerk and snap at the end of the first segment here using A_0 and A_f (check hints in the exercise description)
+                    b[3] = pos_f
+                    A[3,0:6] = A_f[0,:]
+                    A[4:9,0:6] = A_f
+                    A[4:9,6:12] = - A_0
+                elif i < m-2: # Intermediate path segments
+                    # 1. Similarly, implement the initial and final position constraints here for each intermediate path segment
+                    b[(6*i)+3] = pos_f
+                    # 2. Similarly, implement the end of the continuity constraints for velocity, acceleration, jerk and snap at the end of each intermediate segment here using A_0 and A_f
+                    A[(6*i)+3 , 6*i : 6*(i+1)] = A_f[0,:]
+                    A[(6*i)+4 : (6*(i+1))+3, 6*i : 6*(i+1)] = A_f
+                    A[(6*i)+4 : (6*(i+1))+3, 6*(i+1) : 6*(i+2)] = - A_0
+                elif i == m-2: #Final path segment
+                    # 1. Implement the initial and final position, velocity and accelerations constraints here for the final path segment using A_0 and A_f
+                    b[(6*i)+3] = pos_f
+                    A[(6*i)+3 : 6*(i+1), 6*i : 6*(i+1)] = A_f[0:3]
+
             # Solve for the polynomial coefficients for the dimension dim
 
-            # poly_coeffs[:,dim] = ...
+            poly_coeffs[:,dim] = np.linalg.inv(A) @ b
 
         ## ---------------------------------------------------------------------------------------------------- ##
 
